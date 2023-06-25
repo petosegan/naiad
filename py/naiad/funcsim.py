@@ -147,6 +147,9 @@ def integrate(fn: FloatFn, x0: float = 0, eps: float = EPS) -> FloatFn:
     """
     Given a real function and an initial value, return a function that
     takes a float x1 and computes the integral of the function from x0 to x1.
+
+    TODO: This implementation is extremely nonperformant, especially when
+    reused many times. I need to use memoization to improve performance.
     """
 
     def integral(x1: float) -> float:
