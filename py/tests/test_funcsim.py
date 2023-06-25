@@ -1,7 +1,14 @@
 import pytest
 import numpy as np
-import numpy.typing as npt
-from naiad.funcsim import arc_length_array, array_to_function, FloatArray, FloatFn
+from naiad.funcsim import (
+    arc_length_array,
+    array_to_function,
+    derivative,
+    FloatArray,
+    FloatFn,
+)
+
+EPS = 1e-2  # tolerance for floating point comparisons
 
 
 @pytest.fixture
@@ -23,9 +30,15 @@ def test_arclength(exes: FloatArray, wyes: FloatArray):
 
     true_eses = np.array([parabola_arclength(x) for x in exes])
 
-    assert np.allclose(eses, true_eses, atol=1e-1)
+    assert np.allclose(eses, true_eses, atol=EPS)
 
 
 def test_array_to_function(exes: FloatArray, wyes: FloatArray):
     fn: FloatFn = array_to_function(exes, wyes)
-    assert fn(0.5) == 0.25
+    assert fn(0.5) == pytest.approx(0.25, EPS)
+
+
+def test_derivative(exes: FloatArray, wyes: FloatArray):
+    fn: FloatFn = array_to_function(exes, wyes)
+    dfn: FloatFn = derivative(fn)
+    assert dfn(0.5) == pytest.approx(1.0, EPS)
