@@ -4,6 +4,7 @@ and visualizing them with SFML.
 ## Usage
 
 ```bash
+make
 ./sfml-app
 ```
 
