@@ -3,6 +3,7 @@ import numpy as np
 from naiad.funcsim import (
     arc_length_array,
     array_to_function,
+    curvature_evolve,
     derivative,
     FloatArray,
     FloatFn,
@@ -73,3 +74,42 @@ def test_xy_to_curvature(x_fn: FloatFn, y_fn: FloatFn):
     x0 = x_fn(s0)
 
     assert curvature_fn(s0) == pytest.approx(true_curvature_fn(x0), EPS)
+
+
+def test_curvature_evolve_amplify(x_fn: FloatFn, y_fn: FloatFn):
+    # curvature as a fn of s
+    curvature_fn = xy_to_curvature(x_fn, y_fn)
+
+    alpha = 0.1
+    vv = 0.0
+    delta_t = 0.1
+
+    evolved_curvature = curvature_evolve(
+        curvature_fn, delta_t=delta_t, alpha=alpha, vv=vv
+    )
+
+    s_0 = 0.5
+    kappa_0 = curvature_fn(s_0)
+    kappa_t = evolved_curvature(s_0)
+
+    assert kappa_t == pytest.approx(np.exp(alpha * delta_t) * kappa_0, EPS)
+
+
+def test_curvature_evolve_advect(x_fn: FloatFn, y_fn: FloatFn):
+    # curvature as a fn of s
+    curvature_fn = xy_to_curvature(x_fn, y_fn)
+
+    alpha = 0.0
+    vv = 0.1
+    delta_t = 0.1
+
+    evolved_curvature = curvature_evolve(
+        curvature_fn, delta_t=delta_t, alpha=alpha, vv=vv
+    )
+
+    s_t = 0.5
+    s_0 = s_t - vv * delta_t
+    kappa_0 = curvature_fn(s_0)
+    kappa_t = evolved_curvature(s_t)
+
+    assert kappa_t == pytest.approx(kappa_0, EPS)
