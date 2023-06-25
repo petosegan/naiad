@@ -2,11 +2,7 @@ import pytest
 import numpy as np
 import numpy.typing as npt
 from naiad.funcsim import (
-    RealFn2,
     arc_length_array,
-    array_to_function,
-    derivative,
-    xy_to_curvature,
 )
 
 FloatArray = npt.NDArray[np.float64]
