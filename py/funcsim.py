@@ -8,6 +8,18 @@ EPS = 1e-3
 RealFn = Callable[[float], float]
 
 
+class RealFn2:
+    def __init__(self, fn: Callable[[float], float], functional_name: str = "UNK"):
+        self.fn = fn
+        self.functional_name = functional_name
+
+    def __call__(self, x: float) -> float:
+        return self.fn(x)
+
+    def __str__(self) -> str:
+        return f"{self.functional_name} ∘ {str(self.fn)}"
+
+
 def arc_length_array(
     x_axis: npt.NDArray[np.float64], y_axis: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
@@ -25,19 +37,15 @@ def arc_length_array(
 def array_to_function(
     x_axis: npt.NDArray[np.float64], y_axis: npt.NDArray[np.float64]
 ) -> RealFn:
-    return interp1d(x_axis, y_axis, kind="cubic", fill_value="extrapolate")
+    interpolator: RealFn = interp1d(
+        x_axis, y_axis, kind="cubic", fill_value="extrapolate"
+    )
+    return interpolator
 
 
 def derivative(fn: RealFn, eps: float = EPS) -> RealFn:
     def result(x: float, eps: float = eps) -> float:
         return (fn(x + eps) - fn(x - eps)) / (2 * eps)
-
-    return result
-
-
-def derivative_2(fn: RealFn, eps: float = EPS) -> RealFn:
-    def result(x: float, eps: float = eps) -> float:
-        return (fn(x + eps) - 2 * fn(x) + fn(x - eps)) / (eps**2)
 
     return result
 
@@ -58,6 +66,8 @@ def xy_to_curvature(x_fn: RealFn, y_fn: RealFn) -> RealFn:
         denominator = denominator_fn(ss)
         if denominator == 0:
             return 0.0
+        if ss < 0:
+            return numerator_fn(0) / denominator
         return numerator_fn(ss) / denominator
 
     return curvature_fn
@@ -76,14 +86,14 @@ def curvature_evolve(
     return result
 
 
-def curvature_to_xy(curvature_fn: RealFn) -> Tuple[RealFn, RealFn]:
-    theta_fn = integrate(curvature_fn)
+def curvature_to_xy(curvature_fn: RealFn, eps: float = 1e-2) -> Tuple[RealFn, RealFn]:
+    theta_fn = integrate(curvature_fn, 0, eps)
 
     costheta_fn: RealFn = lambda ss: np.cos(theta_fn(ss))  # noqa: E731
-    x_fn = integrate(costheta_fn)
+    x_fn = integrate(costheta_fn, 0, eps)
 
     sintheta_fn: RealFn = lambda ss: np.sin(theta_fn(ss))  # noqa: E731
-    y_fn = integrate(sintheta_fn)
+    y_fn = integrate(sintheta_fn, 0, eps)
 
     return x_fn, y_fn
 
