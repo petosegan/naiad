@@ -1,11 +1,7 @@
 import pytest
 import numpy as np
 import numpy.typing as npt
-from naiad.funcsim import (
-    arc_length_array,
-)
-
-FloatArray = npt.NDArray[np.float64]
+from naiad.funcsim import arc_length_array, array_to_function, FloatArray, FloatFn
 
 
 @pytest.fixture
@@ -28,3 +24,8 @@ def test_arclength(exes: FloatArray, wyes: FloatArray):
     true_eses = np.array([parabola_arclength(x) for x in exes])
 
     assert np.allclose(eses, true_eses, atol=1e-1)
+
+
+def test_array_to_function(exes: FloatArray, wyes: FloatArray):
+    fn: FloatFn = array_to_function(exes, wyes)
+    assert fn(0.5) == 0.25

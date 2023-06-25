@@ -1,6 +1,3 @@
-default:
-    just --list
-
 test:
     cd py && poetry run pytest
 
